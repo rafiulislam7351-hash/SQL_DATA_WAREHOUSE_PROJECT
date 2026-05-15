@@ -1,10 +1,11 @@
-******Welcome to My Data Engineering Portfolio!******
+******Data Ware_House & Analytics Project******
+**Welcome to My Data Engineering Portfolio!**
 Greetings! I am Rafiul Islam, and I’m thrilled to have you here. This project represents a significant step in my journey to mastering the modern data stack and building scalable, efficient data pipelines.
 ----------------------------------------------------------------------------------------------------------------------------
-****🏗️ Project Overview: SQL Server Medallion Architecture****
+**🏗️ Project Overview: SQL Server Medallion Architecture**
 This repository demonstrates the implementation of a Medallion Architecture using SQL Server. By organizing data into Bronze, Silver, and Gold layers, we ensure that raw information is systematically transformed into high-quality, business-ready insights.
 ----------------------------------------------------------------------------------------------------------------------------
-****🛠️ Data Pipeline Requirements & Architecture****
+**🛠️ Data Pipeline Requirements & Architecture**
 The architecture follows a structured flow from source to consumption, ensuring data integrity at every step:
 
 **1. Bronze Layer (The Raw Zone)**
@@ -30,7 +31,7 @@ Aggregations: Pre-calculating metrics for faster reporting.
 
 Data Modeling: Organizing data into Star Schemas or flat tables designed for high-performance BI tools and Machine Learning models.
 ---------------------------------------------------------------------------------------------------------------------------
-****📜 License****
+**📜 License**
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don’t hold you liable.
