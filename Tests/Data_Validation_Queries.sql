@@ -4,8 +4,8 @@ GO
 /*******************************************************************************
 Script Name:    bronze.sp_load_bronze_data
 Description:    Stored procedure to truncate and bulk load raw data from CSV files
-                into the Bronze layer tables.
-Author:         Rafiul islam Rafi
+                into the Bronze layer tables with structured error handling.
+Author:         Rafiul Islam Rafi
 Date:           May 2026
 
 PURPOSE:
@@ -21,6 +21,9 @@ WARNINGS / PRE-REQUISITES:
        these paths if migrating environments (e.g., to Dev, QA, or Production).
     3. EXCLUSIVE LOCKS: The `TABLOCK` hint takes a table-level lock, minimizing 
        transaction log overhead but preventing concurrent reads/writes during execution.
+    4. TRANSACTION MANAGEMENT: If an error occurs midway through execution, completed 
+       tables remain populated up to the failure point. Consider adding explicit 
+       transactions if an all-or-nothing approach is required.
 *******************************************************************************/
 
 CREATE OR ALTER PROCEDURE bronze.sp_load_bronze_data
@@ -29,108 +32,131 @@ BEGIN
     -- Settling environment settings for optimal ETL performance
     SET NOCOUNT ON;
 
-    PRINT '=========================================================';
-    PRINT 'Starting Bronze Layer Load...';
-    PRINT '=========================================================';
+    -- Wrapping the entire execution flow in a TRY block for robust error catching
+    BEGIN TRY
 
-    ----------------------------------------------------------------------------
-    -- 1. Load CRM Customer Information
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading CRM Customer Info...';
-    
-    TRUNCATE TABLE bronze.crm_cust_info;
-	
-    BULK INSERT bronze.crm_cust_info
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,          -- Skip the header row
-        FIELDTERMINATOR = ',',
-        TABLOCK                -- Optimizes loading performance
-    );
+        PRINT '=========================================================';
+        PRINT 'Starting Bronze Layer Load...';
+        PRINT '=========================================================';
 
-    ----------------------------------------------------------------------------
-    -- 2. Load CRM Product Information
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading CRM Product Info...';
+        ----------------------------------------------------------------------------
+        -- 1. Load CRM Customer Information
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading CRM Customer Info...';
+        
+        TRUNCATE TABLE bronze.crm_cust_info;
+        
+        BULK INSERT bronze.crm_cust_info
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,          -- Skip the header row
+            FIELDTERMINATOR = ',',
+            TABLOCK                -- Optimizes loading performance
+        );
 
-    TRUNCATE TABLE bronze.crm_prd_info;
+        ----------------------------------------------------------------------------
+        -- 2. Load CRM Product Information
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading CRM Product Info...';
 
-    BULK INSERT bronze.crm_prd_info
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,
-        FIELDTERMINATOR = ',',
-        TABLOCK
-    );
+        TRUNCATE TABLE bronze.crm_prd_info;
 
-    ----------------------------------------------------------------------------
-    -- 3. Load CRM Sales Details
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading CRM Sales Details...';
+        BULK INSERT bronze.crm_prd_info
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,
+            FIELDTERMINATOR = ',',
+            TABLOCK
+        );
 
-    TRUNCATE TABLE bronze.crm_sales_details;
+        ----------------------------------------------------------------------------
+        -- 3. Load CRM Sales Details
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading CRM Sales Details...';
 
-    BULK INSERT bronze.crm_sales_details
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,
-        FIELDTERMINATOR = ',',
-        TABLOCK
-    );
+        TRUNCATE TABLE bronze.crm_sales_details;
 
-    ----------------------------------------------------------------------------
-    -- 4. Load ERP Customer AZ12 Data
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading ERP Customer AZ12...';
+        BULK INSERT bronze.crm_sales_details
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,
+            FIELDTERMINATOR = ',',
+            TABLOCK
+        );
 
-    TRUNCATE TABLE bronze.erp_cust_az12;
+        ----------------------------------------------------------------------------
+        -- 4. Load ERP Customer AZ12 Data
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading ERP Customer AZ12...';
 
-    BULK INSERT bronze.erp_cust_az12
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,
-        FIELDTERMINATOR = ',',
-        TABLOCK
-    );
+        TRUNCATE TABLE bronze.erp_cust_az12;
 
-    ----------------------------------------------------------------------------
-    -- 5. Load ERP Location A101 Data
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading ERP Location A101...';
+        BULK INSERT bronze.erp_cust_az12
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,
+            FIELDTERMINATOR = ',',
+            TABLOCK
+        );
 
-    TRUNCATE TABLE bronze.erp_loc_a101;
+        ----------------------------------------------------------------------------
+        -- 5. Load ERP Location A101 Data
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading ERP Location A101...';
 
-    BULK INSERT bronze.erp_loc_a101
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,
-        FIELDTERMINATOR = ',',
-        TABLOCK
-    );
+        TRUNCATE TABLE bronze.erp_loc_a101;
 
-    ----------------------------------------------------------------------------
-    -- 6. Load ERP Product Category G1V1 Data
-    ----------------------------------------------------------------------------
-    PRINT '>> Loading ERP Product Category G1V1...';
+        BULK INSERT bronze.erp_loc_a101
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,
+            FIELDTERMINATOR = ',',
+            TABLOCK
+        );
 
-    TRUNCATE TABLE bronze.erp_px_cat_g1v1;
+        ----------------------------------------------------------------------------
+        -- 6. Load ERP Product Category G1V1 Data
+        ----------------------------------------------------------------------------
+        PRINT '>> Loading ERP Product Category G1V1...';
 
-    BULK INSERT bronze.erp_px_cat_g1v1
-    FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
-    WITH (
-        FORMAT = 'CSV',
-        FIRSTROW = 2,
-        FIELDTERMINATOR = ',',
-        TABLOCK
-    );
+        TRUNCATE TABLE bronze.erp_px_cat_g1v1;
 
-    PRINT '=========================================================';
-    PRINT 'Bronze Layer Load Completed Successfully!';
-    PRINT '=========================================================';
+        BULK INSERT bronze.erp_px_cat_g1v1
+        FROM 'D:\MS SQL Practise\dbc9660c89a3480fa5eb9bae464d6c07\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
+        WITH (
+            FORMAT = 'CSV',
+            FIRSTROW = 2,
+            FIELDTERMINATOR = ',',
+            TABLOCK
+        );
+
+        PRINT '=========================================================';
+        PRINT 'Bronze Layer Load Completed Successfully!';
+        PRINT '=========================================================';
+
+    END TRY
+    BEGIN CATCH
+        -- Structured error tracking blocks executing if any table load fails
+        PRINT '=========================================================';
+        PRINT 'ERROR DETECTED during Bronze Layer Load processing!';
+        PRINT '=========================================================';
+        
+        -- Custom error message formatting for quick logging analysis
+        SELECT 
+            ERROR_NUMBER() AS ErrorNumber,
+            ERROR_SEVERITY() AS ErrorSeverity,
+            ERROR_STATE() AS ErrorState,
+            ERROR_PROCEDURE() AS ErrorProcedure,
+            ERROR_LINE() AS ErrorLine,
+            ERROR_MESSAGE() AS ErrorMessage;
+
+        -- Rethrowing the exception details back up to the calling agent/orchestrator
+        THROW;
+    END CATCH
 END;
 GO
