@@ -1,47 +1,55 @@
 /********************************************************************************
--- PROJECT: Data Warehouse Infrastructure (Medallion Architecture)
--- CREATED: May 2026
--- OBJECTIVE: 
-    This script initializes the 'Data_Ware_House' database using a 
-    Medallion Architecture (Bronze, Silver, Gold). 
--- ARCHITECTURE OVERVIEW:
-    - BRONZE: Raw data ingestion. Minimal transformation.
-    - SILVER: Cleansed, filtered, and augmented data.
-    - GOLD: Business-level aggregates and reporting-ready tables.
+-- SCRIPT PURPOSE: 
+    Initializes the 'Data_Ware_House' environment by establishing the 
+    Medallion Architecture framework. This sets up the logical layers 
+    (Bronze, Silver, Gold) required for a standard Data Engineering pipeline.
+
+-- !!! WARNING - DESTRUCTIVE SCRIPT !!!:
+    This script contains a 'DROP DATABASE' command. Running this will 
+    PERMANENTLY DELETE all existing data, tables, and schemas within 
+    'Data_Ware_House'. Use ONLY in development or when a full 
+    environment reset is required.
 ********************************************************************************/
 
 USE master;
 GO
 
--- Check if the database already exists. 
--- If it does, drop it to ensure a clean slate for development.
+-- 1. DATABASE EXISTENCE CHECK & RESET
+-- Logic: If the DB exists, we force-close all active connections and delete it.
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Data_Ware_House')
 BEGIN
+    PRINT 'Warning: Data_Ware_House exists. Dropping existing database...';
     ALTER DATABASE Data_Ware_House SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE Data_Ware_House;
 END
+ELSE
+BEGIN
+    PRINT 'Data_Ware_House does not exist. Proceeding with fresh creation...';
+END
 GO
 
--- Initialize the core database container
+-- 2. DATABASE CREATION
 CREATE DATABASE Data_Ware_House;
 GO
 
 USE Data_Ware_House;
 GO
 
-/* 
-   SCHEMAS CONFIGURATION 
-   We use schemas to logically separate the data processing layers.
-*/
+-- 3. SCHEMA ORGANIZATION (Medallion Architecture)
 
--- 1. Bronze Layer: Used for landing raw data directly from source systems.
+-- BRONZE: The "Raw" zone. Data is kept in its original format. 
+-- No transformations are applied here; it serves as a historical record.
 CREATE SCHEMA bronze;
 GO
 
--- 2. Silver Layer: Used for validated, deduplicated, and standardized data.
+-- SILVER: The "Cleaned" zone. Data is filtered, joined, and standardized. 
+-- This is where we handle nulls, duplicates, and data type formatting.
 CREATE SCHEMA silver;
 GO
 
--- 3. Gold Layer: Highly refined data optimized for analytics and BI dashboards.
+-- GOLD: The "Curated" zone. Data is modeled for the end-user. 
+-- This layer contains aggregated Data Marts and tables ready for Power BI/Tableau.
 CREATE SCHEMA gold;
 GO
+
+PRINT 'Data Warehouse setup complete. Schemas [bronze], [silver], and [gold] created successfully.';
