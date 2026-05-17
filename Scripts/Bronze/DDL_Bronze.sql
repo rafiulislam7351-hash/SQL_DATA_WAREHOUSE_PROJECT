@@ -28,7 +28,6 @@ GO
 CREATE TABLE bronze.crm_cust_info (
 	cust_id INT,
 	cust_key NVARCHAR(50),
-	cust_email VARCHAR(255),
 	cust_first_name NVARCHAR(50),
 	cust_last_name NVARCHAR(50),
 	cust_material_status NVARCHAR(50),
