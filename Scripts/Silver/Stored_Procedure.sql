@@ -210,9 +210,9 @@ BEGIN
             sls_order_dt,
             sls_ship_dt,
             sls_due_dt,
-            sls_sales,
+            sls_price,
             sls_quantity,
-            sls_price
+            sls_sales
         )
         SELECT
             sls_ord_num,
@@ -243,19 +243,22 @@ BEGIN
                     ELSE CAST(sls_due_dt AS NVARCHAR(8))
                 END, 112
             ) AS sls_due_dt,
-            -- Data Quality Audit: Recalculate sales amount if fields match unexpected or empty entries
-            CASE 
-                WHEN sls_sales <= 0 OR sls_sales IS NULL OR sls_price != sls_quantity * ABS(sls_price) 
-                    THEN sls_quantity * ABS(sls_price)
-                ELSE sls_sales
-            END AS sls_sales,
-            TRY_CAST(sls_quantity AS INT) AS sls_quantity,
-            -- Data Quality Audit: Reverse engineer unit price when numbers do not balance mathematically
+           
+            -- Check if sales is missing, invalid, or doesn't match the math
             CASE
-                WHEN sls_price <= 0 OR sls_price IS NULL OR sls_price != sls_sales / NULLIF(sls_quantity, 0) 
+                WHEN sls_price <= 0 OR sls_price IS NULL 
                     THEN NULLIF(sls_sales, 0) / NULLIF(sls_quantity, 0)
                 ELSE sls_price
-            END AS sls_price
+            END AS sls_price,
+            TRY_CAST(sls_quantity AS INT) AS sls_quantity,
+            -- 2. CLEAN & CONFORM GROSS SALES SECOND (Use the stabilized price to fix the math)
+            CASE 
+                WHEN sls_sales <= 0 
+                     OR sls_sales IS NULL 
+                     OR CAST(sls_sales AS BIGINT) != CAST(sls_quantity AS BIGINT) * ABS(CAST(sls_price AS BIGINT))
+                    THEN sls_quantity * ABS(sls_price)
+                ELSE sls_sales
+            END AS sls_sales
         FROM bronze.crm_sales_details;
 
         SET @StepEndTime = SYSDATETIME();
