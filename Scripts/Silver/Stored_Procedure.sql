@@ -84,7 +84,7 @@ BEGIN
         WITH RankedCustomers AS (
             SELECT
                 TRY_CAST(cust_id AS INT) AS cust_id,                        -- Enforce strict data type casting
-                TRY_CAST(cust_key AS INT) AS cust_key,                      -- Cast customer business key to internal format
+                cust_key,          
                 COALESCE(TRIM(cust_first_name), 'Unknown') AS cust_first_name, -- Clean structural whitespace strings
                 COALESCE(TRIM(cust_last_name), 'Unknown') AS cust_last_name,  
                 CASE 
