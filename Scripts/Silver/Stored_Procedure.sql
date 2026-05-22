@@ -84,7 +84,7 @@ BEGIN
         WITH RankedCustomers AS (
             SELECT
                 TRY_CAST(cust_id AS INT) AS cust_id,                        -- Enforce strict data type casting
-                cust_key,          
+                cust_key,                      
                 COALESCE(TRIM(cust_first_name), 'Unknown') AS cust_first_name, -- Clean structural whitespace strings
                 COALESCE(TRIM(cust_last_name), 'Unknown') AS cust_last_name,  
                 CASE 
@@ -162,10 +162,7 @@ BEGIN
                 prd_cost,
                 prd_line,
                 prd_start_dt,
-                COALESCE(
-                    DATEADD(day, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_id ORDER BY prd_start_dt)), 
-                    CAST('9999-12-31' AS DATE)
-                ) AS prd_end_dt, -- Set missing end dates to the high data-warehouse default threshold
+                DATEADD(day, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)) AS prd_end_dt, -- Next start date becomes current end date
                 ROW_NUMBER() OVER (PARTITION BY prd_id, prd_start_dt ORDER BY prd_cost DESC) AS rn
             FROM CleanedBronze
         )
