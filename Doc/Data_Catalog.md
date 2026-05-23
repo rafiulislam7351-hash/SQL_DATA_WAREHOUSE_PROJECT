@@ -1,7 +1,3 @@
-Here is the complete documentation for your Gold Layer schema based on our architecture.
-
----
-
 ## 🌟 Gold Layer Overview
 
 The **Gold Layer** represents the final, presentation-ready tier of your data warehouse. In this layer, cleansed staging data from the Silver layer is transformed into an optimized **Star Schema** dimensional model.
@@ -19,34 +15,24 @@ This dimension view centralizes all customer-related records. It consolidates fo
 | Column Name | Data Type | Description |
 | --- | --- | --- |
 | **customer_key** | `BIGINT` | **Surrogate Key:** A system-generated sequential integer used as the unique primary key for the Gold layer. <br>
-
 <br>*Example: `1, 2, 3*` |
 | **customer_id** | `INT` | **Natural Key:** The primary identifier inherited directly from the operational CRM system. <br>
-
 <br>*Example: `10042*` |
 | **customer_number** | `VARCHAR` | The unique cross-system string or business ID used to track the customer. <br>
-
 <br>*Example: `CUST-AZ-992*` |
 | **first_name** | `VARCHAR` | The customer's legal first name. <br>
-
 <br>*Example: `"Rafiul"*` |
 | **last_name** | `VARCHAR` | The customer's legal family or last name. <br>
-
 <br>*Example: `"Islam"*` |
 | **customer_country** | `VARCHAR` | The geographical country of residency retrieved from ERP infrastructure. <br>
-
 <br>*Example: `"Bangladesh"*` |
 | **customer_gender** | `VARCHAR` | Cleansed gender attribute. It utilizes CRM data first, falling back to ERP records if missing or marked "Unknown". <br>
-
 <br>*Example: `"Male"*` |
 | **marital_status** | `VARCHAR` | The current recorded relationship status of the customer. <br>
-
 <br>*Example: `"Married"*` |
 | **customer_birthdate** | `DATE` | The birth date of the customer compiled from auxiliary ERP files. <br>
-
 <br>*Example: `2002-06-15*` |
 | **customer_create_date** | `DATE` | The historical timestamp recording when the customer profile was first created. <br>
-
 <br>*Example: `2025-01-10*` |
 
 ---
